@@ -7,24 +7,48 @@ def contour_detection(imageFrame):
     # HSV(hue-saturation-value)
     # color space
     hsvFrame = cv2.cvtColor(imageFrame, cv2.COLOR_BGR2HSV)
+
+    # Calculate total pixels in frame
+    total_pixels = np.prod(frame.shape[:2])
   
     # Set range for orange color and 
     # define mask
     orange_lower = np.array([5, 50, 50], np.uint8)
     orange_upper = np.array([15, 255, 255], np.uint8)
     orange_mask = cv2.inRange(hsvFrame, orange_lower, orange_upper)
+
+    # Calculate porportion to frame
+    orange_pixels = cv2.countNonZero(orange_mask)
+    orange_percentage = orange_pixels / total_pixels
+
+    if orange_percentage >= 0.5:
+        print("ORANGE")
   
-    # Set range for green color and 
+    # Set range for pink color and 
     # define mask
-    green_lower = np.array([25, 52, 72], np.uint8)
-    green_upper = np.array([102, 255, 255], np.uint8)
-    green_mask = cv2.inRange(hsvFrame, green_lower, green_upper)
+    pink_lower = np.array([140, 50, 50], np.uint8)
+    pink_upper = np.array([180, 255, 255], np.uint8)
+    pink_mask = cv2.inRange(hsvFrame, pink_lower, pink_upper)
+
+    # Calculate porportion to frame
+    pink_pixels = cv2.countNonZero(pink_mask)
+    pink_percentage = pink_pixels / total_pixels
+
+    if pink_percentage >= 0.5:
+        print("PINK")
   
     # Set range for blue color and
     # define mask
-    blue_lower = np.array([94, 80, 2], np.uint8)
+    blue_lower = np.array([94, 50, 50], np.uint8)
     blue_upper = np.array([120, 255, 255], np.uint8)
     blue_mask = cv2.inRange(hsvFrame, blue_lower, blue_upper)
+
+    # Calculate porportion to frame
+    blue_pixels = cv2.countNonZero(blue_mask)
+    blue_percentage = blue_pixels / total_pixels
+
+    if blue_percentage >= 0.5:
+        print("BLUE")
       
     # Morphological Transform, Dilation
     # for each color and bitwise_and operator
@@ -37,10 +61,10 @@ def contour_detection(imageFrame):
     res_orange = cv2.bitwise_and(imageFrame, imageFrame, 
                               mask = orange_mask)
       
-    # For green color
-    green_mask = cv2.dilate(green_mask, kernel)
-    res_green = cv2.bitwise_and(imageFrame, imageFrame,
-                                mask = green_mask)
+    # For pink color
+    pink_mask = cv2.dilate(pink_mask, kernel)
+    res_pink = cv2.bitwise_and(imageFrame, imageFrame,
+                                mask = pink_mask)
       
     # For blue color
     blue_mask = cv2.dilate(blue_mask, kernel)
@@ -60,12 +84,12 @@ def contour_detection(imageFrame):
                                        (x + w, y + h), 
                                        (0, 0, 255), 2)
               
-            cv2.putText(imageFrame, "orange Colour", (x, y),
+            cv2.putText(imageFrame, "Orange Colour", (x, y),
                         cv2.FONT_HERSHEY_SIMPLEX, 1.0,
                         (0, 0, 255))    
   
-    # Creating contour to track green color
-    contours, hierarchy = cv2.findContours(green_mask,
+    # Creating contour to track pink color
+    contours, hierarchy = cv2.findContours(pink_mask,
                                            cv2.RETR_TREE,
                                            cv2.CHAIN_APPROX_SIMPLE)
       
@@ -77,7 +101,7 @@ def contour_detection(imageFrame):
                                        (x + w, y + h),
                                        (0, 255, 0), 2)
               
-            cv2.putText(imageFrame, "Green Colour", (x, y),
+            cv2.putText(imageFrame, "Pink Colour", (x, y),
                         cv2.FONT_HERSHEY_SIMPLEX, 
                         1.0, (0, 255, 0))
   
