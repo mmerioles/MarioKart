@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 from pyvesc import VESC
 import time
-
+import depthai as dai
 
 BOOST = "boost"
 BOOST_RPM = 8000
@@ -17,9 +17,7 @@ NORMAL = "normal"
 NORMAL_RPM = 5000
 
 
-SERIAL_PORT = "tty/ACM0"
-
-current_state = NORMAL
+SERIAL_PORT = "/dev/ttyACM0"
 
 def set_rpm(rpm):
     with VESC(serial_port=SERIAL_PORT) as motor:
@@ -29,33 +27,29 @@ def set_rpm(rpm):
         
 
 def set_state(state):
-    if current_state == state:
-        return
-    else:
-        if state == BOOST:
-            set_rpm(BOOST_RPM)
-            time.sleep(3)
-        elif state == SLOW:
-            set_rpm(SLOW_RPM)
-            time.sleep(3)
-        elif state == STOP:
-            set_rpm(STOP_RPM)
-            time.sleep(3)
-        else:
-            set_rpm(NORMAL_RPM)
+    if state == BOOST:
+        set_rpm(BOOST_RPM)
+        time.sleep(2)
+    elif state == SLOW:
+        set_rpm(SLOW_RPM)
+        time.sleep(2)
+    elif state == STOP:
+        set_rpm(STOP_RPM)
+        time.sleep(2)
+
     set_rpm(NORMAL_RPM)
-    current_state = state
+
     return
     
 
 
 def contour_detection(imageFrame): 
+    set_state(NORMAL)
+
     # Convert the imageFrame in 
     # BGR(RGB color space) to 
     # HSV(hue-saturation-value)
     # color space
-
-
     hsvFrame = cv2.cvtColor(imageFrame, cv2.COLOR_BGR2HSV)
 
     # Calculate total pixels in frame
@@ -71,7 +65,7 @@ def contour_detection(imageFrame):
     orange_pixels = cv2.countNonZero(orange_mask)
     orange_percentage = orange_pixels / total_pixels
 
-    if orange_percentage >= 0.5:
+    if orange_percentage >= 0.3:
         print("ORANGE")
         set_state(STOP)
   
@@ -85,7 +79,7 @@ def contour_detection(imageFrame):
     pink_pixels = cv2.countNonZero(pink_mask)
     pink_percentage = pink_pixels / total_pixels
 
-    if pink_percentage >= 0.5:
+    if pink_percentage >= 0.3:
         print("PINK")
         set_state(SLOW)
   
@@ -99,7 +93,7 @@ def contour_detection(imageFrame):
     blue_pixels = cv2.countNonZero(blue_mask)
     blue_percentage = blue_pixels / total_pixels
 
-    if blue_percentage >= 0.5:
+    if blue_percentage >= 0.3:
         print("BLUE")
         set_state(BOOST)
       
@@ -191,7 +185,7 @@ while True:
     result = contour_detection(frame)
     
     # Show the result
-    cv2.imshow('Result', result)
+    # cv2.imshow('Result', result)
 
     # Check if the user pressed the 'q' key to quit
     if cv2.waitKey(1) == ord('q'):
